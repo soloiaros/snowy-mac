@@ -238,7 +238,8 @@ slope: tilts[record.id]?.top ?? 0))
         // Fallback when the window was never seen outside the strip. A cached width below 4x the
         // thumbnail is an animation frame, not an original.
         let width = Float(originalWidth.flatMap { $0 > rect.width * 4 ? $0 : nil } ?? rect.width / stripWidthScale)
-        let perspective = stripFocalLength / (stripFocalLength + width * sin(stripYaw))
+        let focalLength = stripFocalLength * Float(max(1, display.height) / 1080.0)
+        let perspective = focalLength / (focalLength + width * sin(stripYaw))
         let eye = Float(display.midY), minY = Float(rect.minY), maxY = Float(rect.maxY)
         // Bounds touch the near edge on the side away from the eye; the far edge on the other.
         let topNear = minY <= eye ? minY : eye + (minY - eye) / perspective
