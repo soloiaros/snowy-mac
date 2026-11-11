@@ -175,6 +175,34 @@ final class SystemSurfaceTests: XCTestCase {
                        stripScene(thumb).bodies.first { $0.id == 3 }!)
     }
 
+    func testStageManagerTiltIsUniformAcrossMacBookDisplayResolutions() {
+        let macDisplays: [(name: String, bounds: CGRect)] = [
+            ("13\" MacBook Air", CGRect(x: 0, y: 0, width: 1440, height: 900)),
+            ("14\" MacBook Pro", CGRect(x: 0, y: 0, width: 1512, height: 982)),
+            ("16\" MacBook Pro", CGRect(x: 0, y: 0, width: 1728, height: 1117)),
+            ("27\" 5K Studio Display", CGRect(x: 0, y: 0, width: 2560, height: 1440))
+        ]
+
+        for display in macDisplays {
+            let thumb = CGRect(x: 16, y: display.bounds.height * 0.2, width: 138, height: 118)
+            let app = metadata(id: 1, pid: 1, bounds: CGRect(x: 300, y: 300, width: 500, height: 400))
+            let records = DesktopWindowDecoder.decode(metadata: [
+                metadata(id: 2, pid: 2, bounds: thumb),
+                metadata(id: 3, pid: 3, bounds: thumb),
+                app
+            ], processRoles: [2: .other], excludingPID: 999)
+            let scene = DesktopSceneBuilder.build(displayBounds: display.bounds, menuInset: 24, windows: records)
+            guard let body = scene.bodies.first(where: { $0.id == 3 }) else {
+                XCTFail("Missing strip body for \(display.name)")
+                continue
+            }
+            // All display resolutions must produce visually uniform slopes matching the 1080p calibration (~0.18-0.19)
+            XCTAssertEqual(body.topSlope, 0.185, accuracy: 0.02, "\(display.name) top slope diverged: \(body.topSlope)")
+            XCTAssertGreaterThan(body.topSlope, 0, "\(display.name) top slope should be positive for upper thumbnail")
+            XCTAssertGreaterThan(body.bottomSlope, 0, "\(display.name) bottom slope should be positive for upper thumbnail")
+        }
+    }
+
     func testVisibleFullDisplayDockWindowIsMissionControl() {
         let window = DesktopWindowRecord(id: 1, bounds: CGRect(x: 100, y: 100, width: 500, height: 400), layer: 0, role: .application)
         let dock = { (opacity: Float) in
