@@ -271,11 +271,16 @@ final class WindowTracker {
         let displayLayoutBounds = displays.reduce(CGRect.null) { $0.union($1.bounds) }
         let appearance = DesktopAppearance(macOSMajorVersion: ProcessInfo.processInfo.operatingSystemVersion.majorVersion)
         return displays.map { display in
-            let scene = DesktopSceneBuilder.build(displayBounds: display.bounds, menuInset: display.menuInset,
-                                                  windows: records, dockLayout: dockLayout,
-                                                  preferredDockID: preferredDockIDs[display.id],
-                                                  dockBottomInset: display.dockBottomInset,
-                                                  displayLayoutBounds: displayLayoutBounds, appearance: appearance)
+            let scene = DesktopSceneBuilder.build(
+                displayBounds: display.bounds,
+                menuInset: display.menuInset,
+                windows: records,
+                dockLayout: dockLayout,
+                preferredDockID: preferredDockIDs[display.id],
+                dockBottomInset: display.dockBottomInset,
+                displayLayoutBounds: displayLayoutBounds,
+                appearance: appearance
+            )
             let spotlight = scene.surfaces.compactMap { surface -> SpotlightSnowSupport? in
                 guard surface.isElevated, let level = spotlightLevels[surface.id],
                       surface.id <= UInt64(UInt32.max) else { return nil }
