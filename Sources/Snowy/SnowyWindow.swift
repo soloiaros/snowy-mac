@@ -104,6 +104,9 @@ struct SnowyWindowView: View {
                 } : nil
             )
         }
+        .onAppear {
+            updater.probeForUpdates()
+        }
     }
 
     @ViewBuilder

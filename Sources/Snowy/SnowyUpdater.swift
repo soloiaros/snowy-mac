@@ -12,6 +12,7 @@ final class SnowyUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
     @Published private(set) var availableVersion: String?
     @Published private(set) var isUpdating = false
     var onChange: (() -> Void)?
+    private var lastProbeTime: TimeInterval = -.infinity
 
     init(testVersion: String? = nil) {
         self.availableVersion = testVersion
@@ -22,12 +23,21 @@ final class SnowyUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
         availableVersion != nil && !driver.installRequested && !updater.sessionInProgress
     }
 
+    func probeForUpdates(force: Bool = false) {
+        guard Bundle.main.bundleURL.pathExtension == "app" else { return }
+        let now = CACurrentMediaTime()
+        guard force || now - lastProbeTime >= 300 else { return }
+        guard updater.canCheckForUpdates else { return }
+        lastProbeTime = now
+        updater.checkForUpdateInformation()
+    }
+
     func start() {
         guard Bundle.main.bundleURL.pathExtension == "app" else { return }
         do {
             try updater.start()
             if updater.automaticallyChecksForUpdates {
-                updater.checkForUpdateInformation()
+                probeForUpdates(force: true)
             }
         } catch {
             NSLog("Snowy updater could not start: %@", error.localizedDescription)

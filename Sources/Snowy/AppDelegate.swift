@@ -15,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSM
     private let decorationSettings = DecorationSettings()
     private let updater = SnowyUpdater()
     private let updateItem = NSMenuItem(title: "Update", action: #selector(installUpdate), keyEquivalent: "")
+    private var updateCheckTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Read the persisted domain before coordinator startup can write settings.
@@ -24,6 +25,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSM
         buildMenu()
         updater.onChange = { [weak self] in self?.updateAvailableRelease() }
         updater.start()
+
+        let timer = Timer(timeInterval: 1800, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.updater.probeForUpdates() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        updateCheckTimer = timer
+
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.updater.probeForUpdates() }
+        }
         do {
             let coordinator = try DesktopCoordinator()
             self.coordinator = coordinator
@@ -57,6 +72,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSM
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        updateCheckTimer?.invalidate()
+        updateCheckTimer = nil
         welcomeWindow?.close()
         snowyWindow?.close()
         windPopover?.performClose(nil)
@@ -124,7 +141,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSM
         item.menu = menu
     }
 
-    func menuWillOpen(_ menu: NSMenu) { updateAvailableRelease() }
+    func menuWillOpen(_ menu: NSMenu) {
+        updateAvailableRelease()
+        updater.probeForUpdates()
+    }
 
     private func updateAvailableRelease() {
         guard let version = updater.availableVersion else {
@@ -146,6 +166,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSM
     }
 
     private func presentSnowyWindow() {
+        updater.probeForUpdates()
         if snowyWindow == nil {
             snowyWindow = SnowyWindowController(
                 settings: decorationSettings,
