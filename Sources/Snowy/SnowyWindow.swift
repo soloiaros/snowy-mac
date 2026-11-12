@@ -1,11 +1,12 @@
 import AppKit
+import SnowCore
 import SwiftUI
 
 @MainActor
 final class SnowyWindowController: NSWindowController {
     private var sceneEditor: SceneEditorWindowController?
 
-    init(settings: DecorationSettings, resetDecorations: @escaping () -> Void,
+    init(settings: DecorationSettings, updater: SnowyUpdater, resetDecorations: @escaping () -> Void,
          replayWalkthrough: @escaping () -> Void) {
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 870, height: 620),
                               styleMask: [.titled, .closable, .resizable],
@@ -17,7 +18,8 @@ final class SnowyWindowController: NSWindowController {
         super.init(window: window)
 
         let hosting = NSHostingController(rootView: SnowyWindowView(
-            settings: settings, resetDecorations: resetDecorations, replayWalkthrough: replayWalkthrough,
+            settings: settings, updater: updater, resetDecorations: resetDecorations,
+            replayWalkthrough: replayWalkthrough,
             openEditor: { [weak self] in self?.openSceneEditor(settings: settings) }
         ))
         hosting.sizingOptions = []
@@ -61,18 +63,25 @@ struct SnowyWindowView: View {
     }
 
     var settings: DecorationSettings
+    @ObservedObject var updater: SnowyUpdater
     var resetDecorations: () -> Void
     var replayWalkthrough: () -> Void
     var openEditor: () -> Void
     @State private var page: Page? = .decorations
+    @State private var showingReleaseNotes = false
+    @StateObject private var releaseNotesProvider = ReleaseNotesProvider()
 
     var body: some View {
         NavigationSplitView {
-            List(Page.allCases, selection: $page) { item in
-                Label(item.rawValue, systemImage: item.symbol)
-                    .tag(item)
+            VStack(spacing: 0) {
+                List(Page.allCases, selection: $page) { item in
+                    Label(item.rawValue, systemImage: item.symbol)
+                        .tag(item)
+                }
+                .listStyle(.sidebar)
+
+                sidebarBottomSection
             }
-            .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(min: 160, ideal: 182, max: 210)
         } detail: {
             switch page ?? .decorations {
@@ -84,6 +93,64 @@ struct SnowyWindowView: View {
                 SnowyGuideView(replayWalkthrough: replayWalkthrough)
             }
         }
+        .sheet(isPresented: $showingReleaseNotes) {
+            ReleaseNotesSheetView(
+                provider: releaseNotesProvider,
+                currentVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.10.0",
+                availableVersion: updater.availableVersion,
+                onUpdate: updater.canInstall ? { [weak updater] in
+                    showingReleaseNotes = false
+                    updater?.install()
+                } : nil
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var sidebarBottomSection: some View {
+        VStack(spacing: 8) {
+            Divider()
+                .padding(.horizontal, -8)
+
+            if let availableVersion = updater.availableVersion {
+                Button {
+                    updater.install()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 11, weight: .semibold))
+                        Text(updater.isUpdating ? "Updating…" : "Update to \(availableVersion)")
+                            .font(.system(size: 12, weight: .medium))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+                .disabled(!updater.canInstall)
+                .help("Download and install Snowy \(availableVersion)")
+            }
+
+            Button {
+                showingReleaseNotes = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 11, weight: .medium))
+                    Text("Release Notes")
+                        .font(.system(size: 12, weight: .regular))
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
+            .help("View Snowy release notes")
+        }
+        .padding(.horizontal, 14)
+        .padding(.bottom, 12)
+        .animation(.easeInOut(duration: 0.2), value: updater.availableVersion)
     }
 }
 
