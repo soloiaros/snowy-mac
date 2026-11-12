@@ -1,11 +1,11 @@
 Snowy brings interactive snow to window edges, desktop widgets, Spotlight, and a bottom-positioned Dock.
 
+- **Critical Fix**: Fixes a regression in v0.11.0 where snow and decorations failed to display due to an erroneous fullscreen detection on the Dock background window.
+- **Immediate Update Notifications**: Snowy now automatically checks for updates whenever you open the status menu or settings window, as well as on wake from sleep, so new version alerts appear without having to restart the app.
 - **In-App Release Notes & Quick Update**: Access release highlights and install updates with one click directly from the Snowy window sidebar.
 - **Stage Manager Support**: Snow now naturally accumulates on and slides along the 3D perspective-tilted strip thumbnails.
-- **Universal Resolution Scaling**: Perspective projection automatically scales with display height, ensuring uniform snow accumulation across all MacBook screens (13", 14", 15", 16") and high-resolution external monitors.
-- **Aligned Window & Dock Contours**: Snow contours now trace window corners and the Dock smoothly without clipping or visual gaps.
-- **ChatGPT Overlay Fix**: Fixed an issue where the ChatGPT desktop companion overlay could block snow from falling.
-- **Wallpapers & Props**: Import custom wallpapers in batches, decorate with pixel-art props, and hang string lights that respond to wind and cursor sweeps.
+- **Universal Resolution Scaling**: Perspective projection automatically scales with display height across all MacBook screens and external displays.
+- **Aligned Window & Dock Contours**: Snow contours trace window corners and the Dock smoothly without clipping.
 
 Open the DMG and drag **Snowy.app** onto **Applications**. If you have an earlier copy, you can update directly via the in-app Update button in Snowy or the snowflake menu item.
 

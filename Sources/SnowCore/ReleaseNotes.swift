@@ -145,6 +145,17 @@ public enum ReleaseNotesParser {
 extension ReleaseNote {
     public static let bundledReleases: [ReleaseNote] = [
         ReleaseNote(
+            id: "v0.11.1",
+            version: "0.11.1",
+            title: "Snowy v0.11.1",
+            publishedAt: ISO8601DateFormatter().date(from: "2026-11-12T00:30:00Z"),
+            highlights: [
+                "Fixes a regression in v0.11.0 where desktop snow and decorations stopped displaying due to an erroneous fullscreen check on the Dock host window.",
+                "Update checks now probe when opening the status menu or settings window, so update buttons appear immediately while Snowy is running."
+            ],
+            htmlURL: URL(string: "https://github.com/soloiaros/snowy-mac/releases/tag/v0.11.1")
+        ),
+        ReleaseNote(
             id: "v0.11.0",
             version: "0.11.0",
             title: "Snowy v0.11.0",
