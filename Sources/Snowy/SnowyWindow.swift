@@ -96,7 +96,7 @@ struct SnowyWindowView: View {
         .sheet(isPresented: $showingReleaseNotes) {
             ReleaseNotesSheetView(
                 provider: releaseNotesProvider,
-                currentVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.10.0",
+                currentVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.11.0",
                 availableVersion: updater.availableVersion,
                 onUpdate: updater.canInstall ? { [weak updater] in
                     showingReleaseNotes = false

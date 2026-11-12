@@ -145,6 +145,19 @@ public enum ReleaseNotesParser {
 extension ReleaseNote {
     public static let bundledReleases: [ReleaseNote] = [
         ReleaseNote(
+            id: "v0.11.0",
+            version: "0.11.0",
+            title: "Snowy v0.11.0",
+            publishedAt: ISO8601DateFormatter().date(from: "2026-11-12T00:00:00Z"),
+            highlights: [
+                "Adds in-app release notes viewer and update buttons in the Snowy settings window.",
+                "Adds Stage Manager support: snow now accumulates and slides along the tilted 3D perspective edges of strip thumbnails.",
+                "Aligns snow accumulation contours with window borders and the bottom Dock without clipping.",
+                "Maintains consistent Stage Manager thumbnail tilts across all MacBook and external display resolutions."
+            ],
+            htmlURL: URL(string: "https://github.com/soloiaros/snowy-mac/releases/tag/v0.11.0")
+        ),
+        ReleaseNote(
             id: "v0.10.1",
             version: "0.10.1",
             title: "Snowy v0.10.1",

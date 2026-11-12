@@ -81,6 +81,6 @@ final class ReleaseNotesTests: XCTestCase {
 
     func testBundledReleasesArePopulated() {
         XCTAssertFalse(ReleaseNote.bundledReleases.isEmpty)
-        XCTAssertEqual(ReleaseNote.bundledReleases.first?.version, "0.10.1")
+        XCTAssertEqual(ReleaseNote.bundledReleases.first?.version, "0.11.0")
     }
 }
