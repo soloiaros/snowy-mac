@@ -62,7 +62,7 @@ Keep a protected backup of the signing key and publish a new version when releas
 
 ## See download counts
 
-Run `./scripts/download-stats.sh` from the repository with GitHub CLI signed in. The report includes the website's DMG downloads and separates installer and ZIP counts by release. GitHub counts asset downloads, including repeat downloads and ZIPs fetched by the in-app updater.
+Run `./scripts/download-stats.sh` from the repository with GitHub CLI signed in. The report shows macOS DMG and ZIP counts and Windows x64 and ARM64 installer counts by release, including published betas. GitHub counts asset downloads, including repeat downloads and ZIPs fetched by the in-app updater.
 
 ## Keep it original
 
