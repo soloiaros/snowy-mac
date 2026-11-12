@@ -149,6 +149,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSM
         if snowyWindow == nil {
             snowyWindow = SnowyWindowController(
                 settings: decorationSettings,
+                updater: updater,
                 resetDecorations: { [weak self] in self?.coordinator?.resetDecorations() },
                 replayWalkthrough: { [weak self] in self?.presentWelcome() }
             )

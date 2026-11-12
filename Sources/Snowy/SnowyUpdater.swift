@@ -1,15 +1,22 @@
 import AppKit
+import Combine
 import Sparkle
 
 /// Sparkle owns discovery, verification, installation, and relaunch. Snowy
 /// adds a menu affordance and uses that click as consent for an eligible update.
 @MainActor
-final class SnowyUpdater: NSObject, SPUUpdaterDelegate {
+final class SnowyUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
     private let driver = SnowyUpdateDriver(hostBundle: .main, delegate: nil)
     private lazy var updater = SPUUpdater(hostBundle: .main, applicationBundle: .main,
                                          userDriver: driver, delegate: self)
-    private(set) var availableVersion: String?
+    @Published private(set) var availableVersion: String?
+    @Published private(set) var isUpdating = false
     var onChange: (() -> Void)?
+
+    init(testVersion: String? = nil) {
+        self.availableVersion = testVersion
+        super.init()
+    }
 
     var canInstall: Bool {
         availableVersion != nil && !driver.installRequested && !updater.sessionInProgress
@@ -30,6 +37,7 @@ final class SnowyUpdater: NSObject, SPUUpdaterDelegate {
     func install() {
         guard canInstall, updater.canCheckForUpdates else { return }
         driver.installRequested = true
+        isUpdating = true
         onChange?()
         updater.checkForUpdates()
     }
@@ -48,6 +56,7 @@ final class SnowyUpdater: NSObject, SPUUpdaterDelegate {
                  error: (any Error)?) {
         driver.installRequested = false
         driver.approvedInstall = false
+        isUpdating = false
         // Refresh after Sparkle has finished changing its session state.
         DispatchQueue.main.async { [weak self] in self?.onChange?() }
     }
