@@ -509,7 +509,7 @@ async function downloadCheck(p, run, mobile = false) {
   await p.click("#windows-download");
   assert.ok(await p.evaluate('document.querySelector("#download-dialog").open && !document.querySelector("#windows-download-options").hidden'));
   assert.equal(await p.evaluate('document.activeElement?.id'), "download-amount");
-  assert.equal(await p.evaluate('document.querySelector("#download-amount").value'), "2.99");
+  assert.equal(await p.evaluate('document.querySelector("#download-amount").value'), "0.00");
   assert.deepEqual(
     await p.evaluate('[...document.querySelectorAll("#windows-download-options button[data-build]")].map(button => [button.dataset.build, button.textContent.trim()])'),
     [["windows-x64", "Download x64"], ["windows-arm64", "Download ARM"]],
@@ -549,8 +549,8 @@ async function downloadCheck(p, run, mobile = false) {
   assert.ok(await p.evaluate('document.querySelector("#download-dialog").open && document.querySelector("#windows-download-options").hidden'));
   assert.equal(
     await p.evaluate('document.querySelector("#download-amount").value'),
-    "2.99",
-    "The download window suggests $2.99",
+    "0.00",
+    "The download window suggests $0.00",
   );
   assert.ok(
     await p.evaluate('document.querySelector("#download-dialog").contains(document.activeElement)'),
