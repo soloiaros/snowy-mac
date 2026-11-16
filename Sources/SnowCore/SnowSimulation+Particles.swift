@@ -79,7 +79,20 @@ extension SnowSimulation {
                 // A full patch spills sideways; it does not silently destroy carried mass.
                 if abs(particle.velocity.x) < 12 { particle.velocity.x = hit.position.x < size.x / 2 ? -35 : 35 }
             }
-            if recycleOnContact { return true } // Snowfall keeps cycling when a pile is full.
+            if recycleOnContact {
+                // A vertical face (window side, screen edge) is a wall: the flake clings to it
+                // and slides down slower than free fall instead of vanishing.
+                if hit.drift == nil, abs(hit.normal.x) > 0.7 {
+                    particle.isSliding = true
+                    // Derive the slide from the free fall, so it does not decay frame after frame.
+                    let fall = particle.freeVelocity?.y ?? particle.velocity.y
+                    particle.velocity = SIMD2(0, max(6, min(40, fall) * 0.3))
+                    remaining *= max(0, 1 - hit.time)
+                    if remaining < 0.0001 { return false }
+                    continue
+                }
+                return true // Snowfall keeps cycling when a pile is full.
+            }
             let dot = particle.velocity.x * hit.normal.x + particle.velocity.y * hit.normal.y
             if dot < 0 {
                 particle.velocity -= hit.normal * (dot * 1.25)

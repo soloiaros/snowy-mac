@@ -166,9 +166,23 @@ public final class SnowSimulation {
             if particle.phase > .pi * 2 { particle.phase -= .pi * 2 }
             let gust = SIMD2(wind + sin(particle.phase) * 9 + self.wind.velocity.x,
                              self.wind.velocity.y * 0.35)
+            let wasSliding = particle.isSliding
+            let free = particle.velocity
+            particle.isSliding = false
             particle.velocity += gust
             let deposited = advanceParticle(&particle, dt: dt, recycleOnContact: true)
             particle.velocity -= gust
+            if particle.isSliding {
+                // Remember the free-fall velocity from before the wall, not the cling state.
+                if !wasSliding { particle.freeVelocity = free }
+                // Keep the horizontal drift so the wind keeps pressing the flake to the wall
+                // next frame; only the vertical speed is the slower slide.
+                particle.velocity.x = (particle.freeVelocity ?? free).x
+            } else if wasSliding, let resume = particle.freeVelocity {
+                // Past the wall's end (or blown off it): fall and drift with the wind again.
+                particle.velocity = resume
+                particle.freeVelocity = nil
+            }
             if deposited || particle.position.y > size.y + 8 || particle.position.y < -40 {
                 particle = newFlake(scattered: false)
             }

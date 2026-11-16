@@ -8,6 +8,10 @@ public struct SnowParticle: Sendable {
     var phase: Float
     var remainingLife: Float
     public var mass: Float = 1
+    /// True while the flake clings to a vertical wall this frame.
+    var isSliding = false
+    /// Free-fall velocity to resume once the flake leaves the wall.
+    var freeVelocity: SIMD2<Float>?
 }
 
 /// GPU layouts match Metal: 16 bytes per snow vertex and falling-flake instance.
