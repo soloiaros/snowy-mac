@@ -82,11 +82,20 @@ extension SnowSimulation {
             if recycleOnContact {
                 // A vertical face (window side, screen edge) is a wall: the flake clings to it
                 // and slides down slower than free fall instead of vanishing.
-                if hit.drift == nil, abs(hit.normal.x) > 0.7 {
+                if hit.drift == nil, abs(hit.normal.x) > 0.7, hit.normal.y <= 0.05 {
                     particle.isSliding = true
                     // Derive the slide from the free fall, so it does not decay frame after frame.
                     let fall = particle.freeVelocity?.y ?? particle.velocity.y
                     particle.velocity = SIMD2(0, max(6, min(40, fall) * 0.3))
+                    remaining *= max(0, 1 - hit.time)
+                    if remaining < 0.0001 { return false }
+                    continue
+                }
+                if hit.drift == nil, hit.normal.y > 0.05 {
+                    // The lower half of a rounded corner (or an underside): the wall ends here.
+                    // Drop the component into the surface and let the flake fall off it.
+                    let into = particle.velocity.x * hit.normal.x + particle.velocity.y * hit.normal.y
+                    if into < 0 { particle.velocity -= hit.normal * into }
                     remaining *= max(0, 1 - hit.time)
                     if remaining < 0.0001 { return false }
                     continue

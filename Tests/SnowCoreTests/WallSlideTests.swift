@@ -66,4 +66,24 @@ final class WallSlideTests: XCTestCase {
         XCTAssertGreaterThan(path.last!.y, 700)
         XCTAssertGreaterThan(path.last!.x, 520)
     }
+
+    /// Real windows have rounded bottom corners, where the contact normal stops being horizontal.
+    func testSlidingFlakeRoundsTheWindowCornerAndKeepsFalling() {
+        let rounded = SolidBody(id: 7, bounds: CGRect(x: 500, y: 100, width: 300, height: 600), cornerRadius: 12)
+        let simulation = SnowSimulation(size: SIMD2(1000, 800), budget: SimulationBudget(flakes: 1), seed: 3)
+        simulation.updateScene(surfaces: [], bodies: [rounded])
+        simulation.snowfall = .flurry
+        simulation.wind = WindSettings(vector: SIMD2(1, 0))
+        simulation.step(dt: 1 / 30, cursor: nil)
+        simulation.flakes[0] = flake(at: SIMD2(497, 650), velocity: SIMD2(0, 40))
+        var path: [SIMD2<Float>] = []
+        for _ in 0..<300 {
+            simulation.step(dt: 1 / 30, cursor: nil)
+            path.append(simulation.flakes[0].position)
+            if simulation.flakes[0].position.y > 740 { break }
+        }
+        XCTAssertTrue(zip(path, path.dropFirst()).allSatisfy { $1.y >= $0.y - 0.01 },
+                      "The flake vanished (was recycled to the top) at the rounded corner")
+        XCTAssertGreaterThan(path.last!.y, 700)
+    }
 }
